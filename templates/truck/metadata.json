@@ -1,0 +1,7 @@
+{
+  "label": "Truck",
+  "outputWidth": 1200,
+  "wrapZone": { "x": 50, "y": 70, "w": 1100, "h": 500 },
+  "bleed": "3mm",
+  "dpi": 300
+}

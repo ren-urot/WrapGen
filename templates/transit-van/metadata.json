@@ -1,0 +1,7 @@
+{
+  "label": "Transit Van",
+  "outputWidth": 1200,
+  "wrapZone": { "x": 98, "y": 82, "w": 1004, "h": 464 },
+  "bleed": "3mm",
+  "dpi": 300
+}

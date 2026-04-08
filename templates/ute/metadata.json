@@ -1,0 +1,7 @@
+{
+  "label": "Ute",
+  "outputWidth": 1200,
+  "wrapZone": { "x": 60, "y": 100, "w": 1080, "h": 420 },
+  "bleed": "3mm",
+  "dpi": 300
+}

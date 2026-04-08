@@ -1,0 +1,7 @@
+{
+  "label": "Sedan",
+  "outputWidth": 1200,
+  "wrapZone": { "x": 80, "y": 110, "w": 1040, "h": 400 },
+  "bleed": "3mm",
+  "dpi": 300
+}
