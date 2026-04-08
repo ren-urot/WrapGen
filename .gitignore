@@ -4,3 +4,8 @@ data/
 *.db
 dist/
 .vercel/
+
+# Template PNGs — real vehicle photos managed outside git
+templates/**/*.png
+templates/**/*.jpg
+!templates/create-placeholders.js
