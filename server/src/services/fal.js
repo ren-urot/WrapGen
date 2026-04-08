@@ -34,8 +34,10 @@ async function generateDemoArtwork(count) {
 
 async function generateArtwork(prompt, count = 2) {
   if (_generateArtworkOverride) return _generateArtworkOverride(prompt, count);
-  if (!process.env.FAL_KEY) {
-    console.log('[demo] FAL_KEY not set — returning placeholder artwork');
+  const falKey = process.env.FAL_KEY || '';
+  // Treat unset or placeholder values (contain spaces or non-ASCII) as demo mode
+  if (!falKey || falKey.includes(' ') || !/^[\x20-\x7E]+$/.test(falKey)) {
+    console.log('[demo] FAL_KEY not configured — returning placeholder artwork');
     return generateDemoArtwork(count);
   }
   const requests = Array.from({ length: count }, () =>
