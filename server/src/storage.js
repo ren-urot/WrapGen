@@ -1,6 +1,8 @@
 // server/src/storage.js
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
 
 let _clientOverride = null;
 
@@ -29,16 +31,40 @@ function getBucket() {
   return process.env.R2_BUCKET || 'wrapgen';
 }
 
+function isR2Configured() {
+  const endpoint = process.env.R2_ENDPOINT || '';
+  const keyId = process.env.R2_ACCESS_KEY_ID || '';
+  return endpoint.startsWith('https://') && keyId.length > 0 && !keyId.includes(' ');
+}
+
+function getLocalUploadsDir() {
+  return path.join(__dirname, '../../data/uploads');
+}
+
+function getServerBaseUrl() {
+  if (process.env.RAILWAY_PUBLIC_DOMAIN) return `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`;
+  return `http://localhost:${process.env.PORT || 3001}`;
+}
+
 async function uploadBuffer(buffer, contentType, ext) {
   const key = `${crypto.randomUUID()}.${ext}`;
-  const client = getClient();
-  await client.send(new PutObjectCommand({
-    Bucket: getBucket(),
-    Key: key,
-    Body: buffer,
-    ContentType: contentType,
-  }));
-  return `${getPublicUrl()}/${key}`;
+
+  if (isR2Configured()) {
+    const client = getClient();
+    await client.send(new PutObjectCommand({
+      Bucket: getBucket(),
+      Key: key,
+      Body: buffer,
+      ContentType: contentType,
+    }));
+    return `${getPublicUrl()}/${key}`;
+  }
+
+  // Demo fallback: save locally and serve via /uploads
+  const dir = getLocalUploadsDir();
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, key), buffer);
+  return `${getServerBaseUrl()}/uploads/${key}`;
 }
 
 module.exports = { uploadBuffer, _setClientForTesting };
