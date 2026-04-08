@@ -50,6 +50,9 @@ function _migrate(db) {
       specs        TEXT,
       created_at   INTEGER NOT NULL
     );
+
+    CREATE INDEX IF NOT EXISTS idx_versions_project_id ON versions(project_id);
+    CREATE INDEX IF NOT EXISTS idx_exports_version_id  ON exports(version_id);
   `);
 }
 

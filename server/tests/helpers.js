@@ -1,4 +1,7 @@
 // server/tests/helpers.js
+// vi, describe, it, expect, etc. are available as globals via vitest.config.mjs (globals: true)
+// No import needed — requiring vitest directly fails in CommonJS packages
+
 process.env.DB_PATH = ':memory:';
 process.env.TEMPLATES_DIR = require('path').join(__dirname, 'fixtures/templates');
 
