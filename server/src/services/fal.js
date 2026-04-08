@@ -8,27 +8,74 @@ function _setGenerateArtworkForTesting(fn) { _generateArtworkOverride = fn; }
 
 async function generateDemoArtwork(count) {
   const sharp = require('sharp');
-  const palette = [
-    { from: '#007BFF', to: '#00D1FF' },
-    { from: '#A3FF12', to: '#007BFF' },
-    { from: '#00D1FF', to: '#A3FF12' },
-    { from: '#FF6B00', to: '#FF00D1' },
-  ];
+  const W = 2048, H = 1024;
+
+  // Design 1 — Deep blue base, bold white diagonal sweep, cyan + lime accents
+  const design1 = `<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <linearGradient id="base" x1="0%" y1="0%" x2="100%" y2="0%">
+    <stop offset="0%"   stop-color="#001d5e"/>
+    <stop offset="55%"  stop-color="#0044c8"/>
+    <stop offset="100%" stop-color="#005de0"/>
+  </linearGradient>
+  <linearGradient id="sweep" x1="0%" y1="0%" x2="0%" y2="100%">
+    <stop offset="0%"   stop-color="white" stop-opacity="0.20"/>
+    <stop offset="100%" stop-color="white" stop-opacity="0.04"/>
+  </linearGradient>
+</defs>
+<rect width="${W}" height="${H}" fill="url(#base)"/>
+
+<!-- Bold diagonal white sweep -->
+<polygon points="${H * 0.55},0 ${H * 0.55 + 150},0 ${H * 0.08 + 150},${H} ${H * 0.08},${H}" fill="url(#sweep)"/>
+
+<!-- Cyan accent blade -->
+<polygon points="${H * 0.98},0 ${H * 0.98 + 80},0 ${H * 0.51 + 80},${H} ${H * 0.51},${H}" fill="rgb(0,209,255)" fill-opacity="0.24"/>
+
+<!-- Thin lime accent -->
+<polygon points="${H * 1.22},0 ${H * 1.22 + 28},0 ${H * 0.75 + 28},${H} ${H * 0.75},${H}" fill="rgb(163,255,18)" fill-opacity="0.40"/>
+
+<!-- Right side depth -->
+<rect x="${Math.round(W * 0.76)}" y="0" width="${Math.round(W * 0.24)}" height="${H}" fill="black" fill-opacity="0.12"/>
+
+<!-- Top/bottom edge darken for depth -->
+<rect x="0" y="0"       width="${W}" height="55" fill="black" fill-opacity="0.22"/>
+<rect x="0" y="${H - 55}" width="${W}" height="55" fill="black" fill-opacity="0.30"/>
+</svg>`;
+
+  // Design 2 — Dark base, bold lime + blue chevron shapes, high contrast
+  const design2 = `<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <linearGradient id="dk" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0%"   stop-color="#07090f"/>
+    <stop offset="100%" stop-color="#0b0e18"/>
+  </linearGradient>
+</defs>
+<rect width="${W}" height="${H}" fill="url(#dk)"/>
+
+<!-- Primary lime chevron block -->
+<polygon points="0,0 ${Math.round(W * 0.22)},0 ${Math.round(W * 0.08)},${H} 0,${H}" fill="rgb(163,255,18)"/>
+<!-- Blue fill next to lime -->
+<polygon points="${Math.round(W * 0.235)},0 ${Math.round(W * 0.36)},0 ${Math.round(W * 0.22)},${H} ${Math.round(W * 0.095)},${H}" fill="rgb(0,100,220)" fill-opacity="0.72"/>
+<!-- Smaller lime accent -->
+<polygon points="${Math.round(W * 0.375)},0 ${Math.round(W * 0.43)},0 ${Math.round(W * 0.29)},${H} ${Math.round(W * 0.235)},${H}" fill="rgb(163,255,18)" fill-opacity="0.38"/>
+
+<!-- Right mirror chevrons (subtle) -->
+<polygon points="${W},0 ${Math.round(W * 0.80)},0 ${Math.round(W * 0.94)},${H} ${W},${H}" fill="rgb(163,255,18)" fill-opacity="0.10"/>
+<polygon points="${Math.round(W * 0.79)},0 ${Math.round(W * 0.73)},0 ${Math.round(W * 0.87)},${H} ${Math.round(W * 0.93)},${H}" fill="rgb(0,100,220)" fill-opacity="0.14"/>
+
+<!-- Thin horizontal centre line -->
+<rect x="0" y="${H / 2 - 1}" width="${W}" height="2" fill="rgb(163,255,18)" fill-opacity="0.14"/>
+
+<!-- Edge darkening -->
+<rect x="0" y="0"       width="${W}" height="48" fill="black" fill-opacity="0.28"/>
+<rect x="0" y="${H - 48}" width="${W}" height="48" fill="black" fill-opacity="0.38"/>
+</svg>`;
+
+  const designs = [design1, design2];
   return Promise.all(
-    Array.from({ length: count }, async (_, i) => {
-      const { from, to } = palette[i % palette.length];
-      return sharp(Buffer.from(
-        `<svg width="2048" height="1024" xmlns="http://www.w3.org/2000/svg">
-          <defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style="stop-color:${from}"/>
-            <stop offset="100%" style="stop-color:${to}"/>
-          </linearGradient></defs>
-          <rect width="2048" height="1024" fill="url(#g)"/>
-          <text x="1024" y="512" text-anchor="middle" dominant-baseline="middle"
-            fill="white" font-size="72" font-family="Arial" font-weight="bold" opacity="0.25">DEMO</text>
-        </svg>`
-      )).jpeg({ quality: 90 }).toBuffer();
-    })
+    Array.from({ length: count }, async (_, i) =>
+      sharp(Buffer.from(designs[i % designs.length])).jpeg({ quality: 92 }).toBuffer()
+    )
   );
 }
 
