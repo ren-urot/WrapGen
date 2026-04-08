@@ -1,8 +1,16 @@
 // server/src/storage.js
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import crypto from 'crypto';
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const crypto = require('crypto');
+
+let _clientOverride = null;
+
+// Used in tests to inject a mock client
+function _setClientForTesting(client) {
+  _clientOverride = client;
+}
 
 function getClient() {
+  if (_clientOverride) return _clientOverride;
   return new S3Client({
     region: 'auto',
     endpoint: process.env.R2_ENDPOINT,
@@ -21,7 +29,7 @@ function getBucket() {
   return process.env.R2_BUCKET || 'wrapgen';
 }
 
-export async function uploadBuffer(buffer, contentType, ext) {
+async function uploadBuffer(buffer, contentType, ext) {
   const key = `${crypto.randomUUID()}.${ext}`;
   const client = getClient();
   await client.send(new PutObjectCommand({
@@ -32,3 +40,5 @@ export async function uploadBuffer(buffer, contentType, ext) {
   }));
   return `${getPublicUrl()}/${key}`;
 }
+
+module.exports = { uploadBuffer, _setClientForTesting };

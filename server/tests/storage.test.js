@@ -1,28 +1,20 @@
 // server/tests/storage.test.js
-import { describe, it, expect, vi } from 'vitest';
-
 process.env.R2_ENDPOINT = 'https://fake.r2.dev';
 process.env.R2_ACCESS_KEY_ID = 'fake-key';
 process.env.R2_SECRET_ACCESS_KEY = 'fake-secret';
 process.env.R2_BUCKET = 'wrapgen-test';
 process.env.R2_PUBLIC_URL = 'https://pub.r2.dev';
 
-const mockSend = vi.fn().mockResolvedValue({});
+const { uploadBuffer, _setClientForTesting } = require('../src/storage');
 
-vi.mock('@aws-sdk/client-s3', () => {
-  function MockS3Client() {
-    this.send = mockSend;
-  }
-  function MockPutObjectCommand(params) {
-    return params;
-  }
-  return {
-    S3Client: MockS3Client,
-    PutObjectCommand: MockPutObjectCommand,
-  };
+beforeEach(() => {
+  const mockSend = vi.fn().mockResolvedValue({});
+  _setClientForTesting({ send: mockSend });
 });
 
-const { uploadBuffer } = await import('../src/storage.js');
+afterEach(() => {
+  _setClientForTesting(null);
+});
 
 describe('uploadBuffer', () => {
   it('returns a public URL with correct extension', async () => {

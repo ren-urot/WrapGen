@@ -1,6 +1,10 @@
 // server/src/app.js
 const express = require('express');
 const cors = require('cors');
+const projectsRouter = require('./routes/projects');
+const generateRouter = require('./routes/generate');
+const templatesRouter = require('./routes/templates');
+const exportRouter = require('./routes/export');
 
 function createApp() {
   const app = express();
@@ -9,6 +13,11 @@ function createApp() {
   app.use(express.json());
 
   app.get('/health', (_req, res) => res.json({ status: 'ok' }));
+
+  app.use('/api/projects', projectsRouter);
+  app.use('/api/projects/:id/generate', generateRouter);
+  app.use('/api/templates', templatesRouter);
+  app.use('/api/export', exportRouter);
 
   return app;
 }
